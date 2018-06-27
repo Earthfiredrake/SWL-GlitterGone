@@ -8,21 +8,30 @@
 import gfx.utils.Delegate;
 import com.GameInterface.DistributedValue;
 
-function onLoad():Void { 
+function onLoad():Void {
+	// HACK: Faking static storage, to avoid needing a class file
+	if (_global.efd == undefined) { _global.efd = new Object(); }
+	if (_global.efd.GlitterGone == undefined) { _global.efd.GlitterGone = new Object(); }
+
 	AgentWindow = DistributedValue.Create("agentSystem_window");
 	AgentWindow.SignalChanged.Connect(HookUI, this);
+	HookUI(AgentWindow);
 }
 
 function HookUI(dv:DistributedValue):Void {
-	if (AgentWindow.GetValue() && !_global.GUI.AgentSystem.RosterIcon.prototype.efdGG_UpdateVisualsBase) {
+	if (!HookApplied) {
 		if (_global.GUI.AgentSystem.RosterIcon.prototype) {
-			_global.GUI.AgentSystem.RosterIcon.prototype.efdGG_UpdateVisualsBase = _global.GUI.AgentSystem.RosterIcon.prototype.UpdateVisuals;
-			_global.GUI.AgentSystem.RosterIcon.prototype.UpdateVisuals = function() {
-				this.efdGG_UpdateVisualsBase();
+			var f:Function = function() {
+				arguments.callee.base.apply(this, arguments);
 				this.m_Foil._visible = false;
 				this.m_Foil.gotoAndStop(1);
 			};
-		} else { setTimeout(Delegate.create(this, HookUI), 50, dv); }
+			f.base = _global.GUI.AgentSystem.RosterIcon.prototype.UpdateVisuals;
+			_global.GUI.AgentSystem.RosterIcon.prototype.UpdateVisuals = f;
+			_global.efd.GlitterGone.HookApplied = true;
+		} else if (dv.GetValue()) { // Window has been opened, will have a prototype soon
+			setTimeout(Delegate.create(this, HookUI), 50, dv);
+		}
 	}
 }
 
