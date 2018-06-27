@@ -19,15 +19,16 @@ function onLoad():Void {
 }
 
 function HookUI(dv:DistributedValue):Void {
-	if (!HookApplied) {
-		if (_global.GUI.AgentSystem.RosterIcon.prototype) {
-			var f:Function = function() {
+	if (!_global.efd.GlitterGone.HookApplied) {
+		var proto:Object = _global.GUI.AgentSystem.RosterIcon.prototype;
+		if (proto) {
+			var wrapper:Function = function() {
 				arguments.callee.base.apply(this, arguments);
 				this.m_Foil._visible = false;
 				this.m_Foil.gotoAndStop(1);
 			};
-			f.base = _global.GUI.AgentSystem.RosterIcon.prototype.UpdateVisuals;
-			_global.GUI.AgentSystem.RosterIcon.prototype.UpdateVisuals = f;
+			wrapper.base = proto.UpdateVisuals;
+			proto.UpdateVisuals = wrapper;
 			_global.efd.GlitterGone.HookApplied = true;
 		} else if (dv.GetValue()) { // Window has been opened, will have a prototype soon
 			setTimeout(Delegate.create(this, HookUI), 50, dv);
