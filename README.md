@@ -15,13 +15,15 @@ The packaged release should be unzipped (including the internal folder) into the
 
 ## Details
 
-+ Requires agent interface to be opened before taking effect, so may or may not apply to an agent dossier from the inventory
-+ May also fail to apply if the agent interface is open on launch, until interface is closed and reopened
-+ Mini-mod: Doesn't bother with my framework library, so doesn't support the general features that provides, also has no settings
++ Mini-mod: Doesn't use my framework library, so doesn't support the general features that provides, also has no settings
 
 Defect reports are always welcome. The forum post is the ideal place to leave a message, but I also track the CurseForge comments and GitHub's issue tracker. For little things or quick troubleshooting flag me down in discord (@Peloprata on the official server's #modding channel) or look for me in game (often lurking in #Sanctuary).
 
 ## Change Log
+**Version 1.1**
++ Swept the glitter out of the corner cases (already open agent interface, agent dossiers)
++ Uses a new and improved function hook, which should eliminate the risk of one particular type of compatibility bug
+
 **Version 1.0**
 + Released
 
