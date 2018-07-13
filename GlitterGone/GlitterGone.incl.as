@@ -14,7 +14,7 @@ function onLoad():Void {
 	if (_global.efd.GlitterGone == undefined) { _global.efd.GlitterGone = new Object(); }
 
 	HookUI(false); // Tries a pre-emptive hook, in case the protoype has been pre-loaded
-	if (!_global.efd.GlitterGone.HookApplied) { // Could not apply hook, setup triggers to try later
+	if (!_global.efd.GlitterGone.AgentIconHookApplied) { // Could not apply hook, setup triggers to try later
 		AgentWindow = DistributedValue.Create("agentSystem_window");
 		AgentWindow.SignalChanged.Connect(HookAgentWindow, this);
 		HookItemUse();
@@ -25,7 +25,7 @@ function onLoad():Void {
 //   Permits multiple mods hooking a single function without having to ensure a unique name for each nested copy
 //   Side-effect based conflicts may still occur, hooking order is arbitrary and there is no way to safely disconnect a hook after the fact
 function HookUI(useTimeout:Boolean):Void {
-	if (!_global.efd.GlitterGone.HookApplied) {
+	if (!_global.efd.GlitterGone.AgentIconHookApplied) {
 		var proto:Object = _global.GUI.AgentSystem.RosterIcon.prototype;
 		if (proto) {
 			var wrapper:Function = function():Void {
@@ -35,7 +35,7 @@ function HookUI(useTimeout:Boolean):Void {
 			};
 			wrapper.Base = proto.UpdateVisuals;
 			proto.UpdateVisuals = wrapper;
-			_global.efd.GlitterGone.HookApplied = true;
+			_global.efd.GlitterGone.AgentIconHookApplied = true;
 
 			// AgentUnlock window loads before hook is applied and doesn't update visuals
 			// So force a refresh if the window exists
@@ -48,16 +48,19 @@ function HookUI(useTimeout:Boolean):Void {
 
 function HookAgentWindow(dv:DistributedValue):Void { HookUI(dv.GetValue()); }
 function HookItemUse():Void { // Triggers a hook attempt when an agent dossier is used from within main inventory
-	var wrapper:Function = function(itemPos:Number):Void {
-		arguments.callee.Base.apply(this, arguments);
-		if (this.GetItemAt(itemPos).m_ItemTypeGUI == 253188674 &&
-			this.GetInventoryID().m_Type == _global.Enums.InvType.e_Type_GC_BackpackContainer) {
-			HookUI(true);
+	if (!_global.efd.GlitterGone.InventoryHookApplied) {
+		var wrapper:Function = function(itemPos:Number):Void {
+			arguments.callee.Base.apply(this, arguments);
+			if (this.GetItemAt(itemPos).m_ItemTypeGUI == 253188674 &&
+				this.GetInventoryID().m_Type == _global.Enums.InvType.e_Type_GC_BackpackContainer) {
+				HookUI(true);
+			}
 		}
+		var proto:Object = _global.com.GameInterface.Inventory.prototype; // This one pre-loads
+		wrapper.Base = proto.UseItem;
+		proto.UseItem = wrapper;
+		_global.efd.GlitterGone.InventoryHookApplied = true;
 	}
-	var proto:Object = _global.com.GameInterface.Inventory.prototype; // This one pre-loads
-	wrapper.Base = proto.UseItem;
-	proto.UseItem = wrapper;
 }
 
 var AgentWindow:DistributedValue;
